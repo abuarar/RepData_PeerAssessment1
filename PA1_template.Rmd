@@ -1,25 +1,126 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "RepData_PeerAssessment1"
+author: "Abuarar"
+date: "July 8, 2018"
+output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r dplyr load}
+library(dplyr)
+```
+-----------------------------------------------
 
-## Loading and preprocessing the data
+# Loading and preprocessing the data
+====================================
 
+## 1. Loading the data (date variable type converted to Date )
 
+```{r reading data,cache=TRUE}
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip",destfile = "./data.zip")
+unzip(zipfile="./data.zip",exdir = ".")
+Activity<-read.csv("./activity.csv")
+```
 
-## What is mean total number of steps taken per day?
+## 2. Process/transform the data
+```{r Process data}
+Activity$date<-as.Date(Activity$date,format="%Y-%m-%d")
+str(Activity)
+```
+-----------------------------------------------
 
+# What is mean total number of steps taken per day?
+===================================================
 
+## 1. Calculate the total number of steps taken per day
+```{r totalSteps}
+totalSteps<-aggregate(Activity$steps, by=list(Activity$date) , FUN = sum)
+names(totalSteps)<-c("dates","totalSteps")
+head(totalSteps)
+```
 
-## What is the average daily activity pattern?
+## 2.Make a histogram of the total number of steps taken each day
+```{r histogram,cache=TRUE}
+barplot(totalSteps$totalSteps,xlab = "Day", main = "Histogram of the total number of steps taken each day", ylab = "Total number of steps",names.arg = as.array(totalSteps$dates))
+```
 
+## 3.Calculate and report the mean and median of the total number of steps taken per day
+```{r totalSteps summary}
+summary(totalSteps)
+```
 
+# What is the average daily activity pattern?
+=============================================
 
-## Imputing missing values
+## 1. Make a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+```{r average daily activity pattern}
+DailyPattern<-aggregate(subset(Activity,!is.na(Activity$steps)==TRUE)$steps, by=list(subset(Activity,!is.na(Activity$steps)==TRUE)$interval) , FUN = mean)
+names(DailyPattern)<-c("5 min interval","AverageSteps")
+plot(DailyPattern$`5 min interval`,DailyPattern$AverageSteps,type="l",main = "Average daily activity pattern",xlab = "5-minute interval",ylab = "Average number of steps across all days")
+```
 
+# 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+```{r interval of maximum number of steps}
+MaxIndex<-which.max(DailyPattern$AverageSteps)
+plot(DailyPattern$`5 min interval`,DailyPattern$AverageSteps,type="l",main = "Average daily activity pattern",xlab = "5-minute interval",ylab = "Average number of steps across all days")
+abline(v=DailyPattern$`5 min interval`[MaxIndex],lty=3,lwd=3,col="blue")
+text(DailyPattern$`5 min interval`[MaxIndex], DailyPattern$AverageSteps [MaxIndex], "<-- Max average number of steps ", adj = 0)
+text(DailyPattern$`5 min interval`[MaxIndex], 0 , DailyPattern$`5 min interval`[MaxIndex], adj = 0, lty=3,lwd=3,col="blue")
+```
 
+# Imputing missing values
+=========================
 
-## Are there differences in activity patterns between weekdays and weekends?
+## 1. total number of missing values in the dataset 
+```{r total number of missing values}
+paste("Total number of missing values in the dataset is:",sum(!complete.cases(Activity)))
+```
+
+## 2. Strategy for filling in all of the missing values in the dataset
+```{r strategy for filling in the missing values}
+ActvityAvgAdded<-merge(Activity,DailyPattern,by.x = "interval",by.y = "5 min interval")
+NAIndex<-which(is.na(ActvityAvgAdded$steps)==TRUE)
+ActvityAvgAdded$steps[NAIndex]<-ActvityAvgAdded$AverageSteps[NAIndex]
+```
+
+## 3. Create a new dataset that is equal to the original dataset but with the missing data filled in
+```{r new dataset with the missing data filled}
+ActivityNew<-select(ActvityAvgAdded,steps,date,interval)
+ActivityNew<-arrange(ActivityNew,date,interval)
+head(ActivityNew)
+```
+
+## 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day
+```{r histogram with NA filled,cache=TRUE}
+totalStepsNew<-aggregate(ActivityNew$steps, by=list(ActivityNew$date) , FUN = sum)
+names(totalStepsNew)<-c("dates","totalSteps")
+barplot(totalStepsNew$totalSteps,xlab = "Day", main = "Histogram of the total number of steps taken each day", ylab = "Total number of steps",names.arg = as.array(totalStepsNew$dates))
+summary(totalStepsNew)
+```
+
+# Are there differences in activity patterns between weekdays and weekends?
+==================================================================
+
+## 1.Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+```{r WeekDayEnd,cache=TRUE}
+WeekMap<-matrix(c("Monday" , "Tuesday" , "Wednesday" , "Thursday" , "Friday" , "Saturday" , "Sunday" , "Weekday" ,"Weekday" ,"Weekday" ,"Weekday" ,"Weekday" , "Weekend"  , "Weekend"),nrow = 7,ncol = 2)
+WeekMap<-as.data.frame(WeekMap)
+names(WeekMap)<-c("Day","DayCat")
+ActivityNew<-mutate(ActivityNew,Day = weekdays(date))
+ActivityNew<-merge(ActivityNew,WeekMap,by.x = "Day", by.y = "Day")
+ActivityNew<-arrange(ActivityNew,date,interval)
+ActivityNew<-ActivityNew[,c(2,3,4,1,5)]
+head(ActivityNew)
+```
+
+## 2.Make a panel plot containing a time series plot  of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis)
+
+```{r average weekday/end activity pattern}
+
+DailyPatternNew<-aggregate(ActivityNew$steps,by = list(ActivityNew$interval,ActivityNew$DayCat),FUN=mean)
+names(DailyPatternNew)<-c("5 min interval","DayCat","AverageSteps")
+library(lattice)
+xyplot(AverageSteps~`5 min interval`|DayCat,data = DailyPatternNew,layout=c(1, 2),type="l",col = "blue")
+```
