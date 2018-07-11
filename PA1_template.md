@@ -96,7 +96,7 @@ names(DailyPattern)<-c("5 min interval","AverageSteps")
 plot(DailyPattern$`5 min interval`,DailyPattern$AverageSteps,type="l",main = "Average daily activity pattern",xlab = "5-minute interval",ylab = "Average number of steps across all days")
 ```
 
-![plot of chunk average daily activity pattern](figure/average daily activity pattern-1.png)
+![plot of chunk average_daily_activity_pattern](figure/average_daily_activity_pattern-1.png)
 
 # 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
@@ -108,7 +108,7 @@ text(DailyPattern$`5 min interval`[MaxIndex], DailyPattern$AverageSteps [MaxInde
 text(DailyPattern$`5 min interval`[MaxIndex], 0 , DailyPattern$`5 min interval`[MaxIndex], adj = 0, lty=3,lwd=3,col="blue")
 ```
 
-![plot of chunk interval of maximum number of steps](figure/interval of maximum number of steps-1.png)
+![plot of chunk interval_of_maximum_number_of_steps](figure/interval_of_maximum_number_of_steps-1.png)
 
 # Imputing missing values
 =========================
@@ -157,7 +157,7 @@ names(totalStepsNew)<-c("dates","totalSteps")
 barplot(totalStepsNew$totalSteps,xlab = "Day", main = "Histogram of the total number of steps taken each day", ylab = "Total number of steps",names.arg = as.array(totalStepsNew$dates))
 ```
 
-![plot of chunk histogram with NA filled](figure/histogram with NA filled-1.png)
+![plot of chunk histogram_with_NA_filled](figure/histogram_with_NA_filled-1.png)
 
 ```r
 summary(totalStepsNew)
@@ -209,4 +209,4 @@ library(lattice)
 xyplot(AverageSteps~`5 min interval`|DayCat,data = DailyPatternNew,layout=c(1, 2),type="l",col = "blue")
 ```
 
-![plot of chunk average weekday/end activity pattern](figure/average weekday/end activity pattern-1.png)
+![plot of chunk average_weekday_end_activity_pattern](figure/average_weekday_end_activity_pattern-1.png)

@@ -55,14 +55,14 @@ summary(totalSteps)
 =============================================
 
 ## 1. Make a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r average daily activity pattern}
+```{r average_daily_activity_pattern}
 DailyPattern<-aggregate(subset(Activity,!is.na(Activity$steps)==TRUE)$steps, by=list(subset(Activity,!is.na(Activity$steps)==TRUE)$interval) , FUN = mean)
 names(DailyPattern)<-c("5 min interval","AverageSteps")
 plot(DailyPattern$`5 min interval`,DailyPattern$AverageSteps,type="l",main = "Average daily activity pattern",xlab = "5-minute interval",ylab = "Average number of steps across all days")
 ```
 
 # 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-```{r interval of maximum number of steps}
+```{r interval_of_maximum_number_of_steps}
 MaxIndex<-which.max(DailyPattern$AverageSteps)
 plot(DailyPattern$`5 min interval`,DailyPattern$AverageSteps,type="l",main = "Average daily activity pattern",xlab = "5-minute interval",ylab = "Average number of steps across all days")
 abline(v=DailyPattern$`5 min interval`[MaxIndex],lty=3,lwd=3,col="blue")
@@ -93,7 +93,7 @@ head(ActivityNew)
 ```
 
 ## 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day
-```{r histogram with NA filled,cache=TRUE}
+```{r histogram_with_NA_filled,cache=TRUE}
 totalStepsNew<-aggregate(ActivityNew$steps, by=list(ActivityNew$date) , FUN = sum)
 names(totalStepsNew)<-c("dates","totalSteps")
 barplot(totalStepsNew$totalSteps,xlab = "Day", main = "Histogram of the total number of steps taken each day", ylab = "Total number of steps",names.arg = as.array(totalStepsNew$dates))
@@ -117,7 +117,7 @@ head(ActivityNew)
 
 ## 2.Make a panel plot containing a time series plot  of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis)
 
-```{r average weekday/end activity pattern}
+```{r average_weekday_end_activity_pattern}
 
 DailyPatternNew<-aggregate(ActivityNew$steps,by = list(ActivityNew$interval,ActivityNew$DayCat),FUN=mean)
 names(DailyPatternNew)<-c("5 min interval","DayCat","AverageSteps")
